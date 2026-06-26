@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Attendance App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #615DEC;
+            --secondary-bg: #7875F2;
+            --app-body-bg: #F3F4FA;
+            --white: #FFFFFF;
+            --text-dark: #333333;
+            --text-light: #A5A5A5;
+            --absent-color: #FF5A79;
+            --present-color: #2CD1F8;
+            --success: #2ecc71;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--app-body-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Container mimicking the professional UI aspect ratio */
+        .app-container {
+            display: flex;
+            width: 950px;
+            height: 650px;
+            background: var(--white);
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* ==================== SIDEBAR STYLE ==================== */
+        .sidebar {
+            width: 35%;
+            background: linear-gradient(180deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: var(--white);
+            position: relative;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .avatar-container {
+            position: relative;
+        }
+
+        .profile-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            object-fit: cover;
+        }
+
+        .profile-info h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .profile-info p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .profile-info p:hover {
+            color: var(--white);
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            opacity: 1;
+            transform: translateX(5px);
+        }
+
+        .sidebar-footer-illustration {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .sidebar-footer-illustration i {
+            font-size: 4rem;
+            opacity: 0.2;
+        }
+
+        /* ==================== MAIN CONTENT STYLE ==================== */
+        .main-content {
+            width: 65%;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .screen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .screen-header h2 {
+            color: var(--text-dark);
+            font-size: 1.6rem;
+        }
+
+        /* Auth Screen Form controls */
+        .auth-box {
+            max-width: 400px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-bg);
+        }
+
+        .btn-primary {
+            background: var(--primary-bg);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #4f4cd1;
+        }
+
+        /* Calendar grid design style mimicking Image 2 */
+        .calendar-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            margin-bottom: 25px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .calendar-month-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .day-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-weight: 600;
+            padding-bottom: 5px;
+        }
+
+        .calendar-day {
+            padding: 10px 0;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .calendar-day:hover {
+            background: #eee;
+        }
+
+        /* Interactive Attendance States */
+        .calendar-day.present {
+            background: rgba(44, 209, 248, 0.15);
+            color: #009cb9;
+            font-weight: bold;
+            border: 1px solid var(--present-color);
+        }
+
+        .calendar-day.absent {
+            background: rgba(255, 90, 121, 0.15);
+            color: #d61f41;
+            font-weight: bold;
+            border: 1px solid var(--absent-color);
+        }
+
+        /* Stats Blocks Style matching Image 2 colors */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            border-radius: 18px;
+            padding: 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100px;
+        }
+
+        .stat-box.working { background: #7c79f3; }
+        .stat-box.absent { background: var(--absent-color); }
+        .stat-box.present { background: var(--present-color); }
+
+        .stat-box span { font-size: 0.8rem; opacity: 0.9; font-weight: 500;}
+        .stat-box h3 { font-size: 1.8rem; font-weight: 700; text-align: right; }
+
+        /* Instructor Feature CSS */
+        .roster-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .roster-table th, .roster-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.9rem;
+        }
+
+        .roster-table th {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge.p-bg { background: rgba(44, 209, 248, 0.2); color: #058dae; }
+
+        /* Toast Notifications */
+        .toast {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div id="toast" class="toast"></div>
+
+        <div class="sidebar">
+            <div>
+                <div class="profile-section">
+                    <div class="avatar-container">
+                        <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=150&auto=format&fit=crop" alt="Profile Headshot" class="profile-img" id="sidebarAvatar">
+                    </div>
+                    <div class="profile-info">
+                        <h3 id="displayProfileName">Akhil</h3>
+                        <p onclick="switchScreen('profile')">View profile</p>
+                    </div>
+                </div>
+
+                <ul class="nav-menu">
+                    <li class="nav-item active" onclick="switchScreen('dashboard', this)">
+                        <i class="fa-solid fa-chart-simple"></i> Dashboard
+                    </li>
+                    <li class="nav-item" onclick="switchScreen('student-features', this)">
+                        <i class="fa-solid fa-calendar-check"></i> Mark Attendance
+                    </li>
+                    <li class="nav-item" onclick="switchScreen('instructor-features', this)">
+                        <i class="fa-solid fa-chalkboard-user"></i> Instructor Portal
+                    </li>
+                    <li class="nav-item" onclick="switchScreen('profile', this)">
+                        <i class="fa-solid fa-user-gear"></i> Profile Settings
+                    </li>
+                    <li class="nav-item" onclick="switchScreen('auth', this)">
+                        <i class="fa-solid fa-lock"></i> Switch User / Auth
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-footer-illustration">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+        </div>
+
+        <div class="main-content">
+            
+            <div id="screen-dashboard" class="screen active">
+                <div class="screen-header">
+                    <h2>Attendance Dashboard</h2>
+                </div>
+                <p style="color: var(--text-light); margin-bottom: 20px; font-size: 0.9rem;">
+                    Welcome back! Here is a summary of your automated calculation context.
+                </p>
+
+                <div class="calendar-card" style="background: linear-gradient(135deg, #615DEC 0%, #4f4cd1 100%); color: white;">
+                    <h3 style="font-weight: 500; font-size: 1.1rem;">Overall Real-Time Metric</h3>
+                    <h1 id="metricPercentage" style="font-size: 3rem; margin: 15px 0 5px 0;">87.5%</h1>
+                    <p style="font-size: 0.85rem; opacity: 0.8;">Calculated dynamically based on logged records below.</p>
+                </div>
+
+                <h3 style="color: var(--text-dark); margin-bottom: 15px; font-size: 1.1rem;">Quick Quick View</h3>
+                <div class="stats-strip" style="margin-top:0;">
+                    <div class="stat-box working">
+                        <span>Total Tracked</span>
+                        <h3 id="dashTotal">24 Days</h3>
+                    </div>
+                    <div class="stat-box present">
+                        <span>Attended</span>
+                        <h3 id="dashPresent">21 Days</h3>
+                    </div>
+                    <div class="stat-box absent">
+                        <span>Skipped</span>
+                        <h3 id="dashAbsent">3 Days</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-student-features" class="screen">
+                <div class="screen-header">
+                    <h2>Mark Attendance</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label for="courseSelect">Select Course Track</label>
+                    <select class="form-control" id="courseSelect">
+                        <option>Computer Science & Engineering (CSE-B)</option>
+                        <option>Database Management Systems (DBMS)</option>
+                        <option>Python AI & Machine Learning</option>
+                    </select>
+                </div>
+
+                <div class="calendar-card">
+                    <div class="calendar-month-selector">
+                        <i class="fa-solid fa-chevron-left" style="cursor:pointer;"></i>
+                        <span>June, 2026</span>
+                        <i class="fa-solid fa-chevron-right" style="cursor:pointer;"></i>
+                    </div>
+                    
+                    <div class="calendar-grid">
+                        <div class="day-label">Sun</div><div class="day-label">Mon</div><div class="day-label">Tue</div>
+                        <div class="day-label">Wed</div><div class="day-label">Thu</div><div class="day-label">Fri</div><div class="day-label">Sat</div>
+                        
+                        <div class="calendar-day" style="visibility: hidden;">0</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(1, this)">1</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(2, this)">2</div>
+                        <div class="calendar-day absent" onclick="toggleDayAttendance(3, this)">3</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(4, this)">4</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(5, this)">5</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(6, this)">6</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(7, this)">7</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(8, this)">8</div>
+                        <div class="calendar-day absent" onclick="toggleDayAttendance(9, this)">9</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(10, this)">10</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(11, this)">11</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(12, this)">12</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(13, this)">13</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(14, this)">14</div>
+                        <div class="calendar-day present" onclick="toggleDayAttendance(15, this)">15</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(16, this)">16</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(17, this)">17</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(18, this)">18</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(19, this)">19</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(20, this)">20</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(21, this)">21</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(22, this)">22</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(23, this)">23</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(24, this)">24</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(25, this)">25</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(26, this)">26</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(27, this)">27</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(28, this)">28</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(29, this)">29</div>
+                        <div class="calendar-day" onclick="toggleDayAttendance(30, this)">30</div>
+                    </div>
+                </div>
+
+                <p style="font-size:0.8rem; color:var(--text-light); text-align:center; margin-bottom:10px;">
+                    💡 Tip: Click any day number above to toggle between Present, Absent, or Unmarked.
+                </p>
+
+                <div class="stats-strip">
+                    <div class="stat-box working">
+                        <span>Total Tracked</span>
+                        <h3 id="lblWorking">24</h3>
+                    </div>
+                    <div class="stat-box absent">
+                        <span>Total Absent</span>
+                        <h3 id="lblAbsent">03</h3>
+                    </div>
+                    <div class="stat-box present">
+                        <span>Total Present</span>
+                        <h3 id="lblPresent">21</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-instructor-features" class="screen">
+                <div class="screen-header">
+                    <h2>Instructor Roster System</h2>
+                </div>
+                
+                <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 5px; font-size: 0.95rem;">Manage Assigned Course</h4>
+                    <p style="font-size:0.85rem; color:var(--text-light)">Course: Core Computer Science Fundamentals / Sec B</p>
+                </div>
+
+                <h3>Registered Class Roster</h3>
+                <table class="roster-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Roll Number</th>
+                            <th>Calculated Att.</th>
+                            <th>Status Metric</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong id="rosterStudentName">Akhil</strong> (You)</td>
+                            <td id="rosterRollNum">24K91A05AL</td>
+                            <td id="rosterPerc">83.5%</td>
+                            <td><span class="badge p-bg">Good Standing</span></td>
+                        </tr>
+                        <tr>
+                            <td>Prashanth</td>
+                            <td>24672A0567</td>
+                            <td>92.0%</td>
+                            <td><span class="badge p-bg">Excellent</span></td>
+                        </tr>
+                        <tr>
+                            <td>Boddu Goutham Raj</td>
+                            <td>24671A0412</td>
+                            <td>64.5%</td>
+                            <td><span class="badge" style="background:rgba(255,90,121,0.2); color:red;">Shortage</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="screen-profile" class="screen">
+                <div class="screen-header">
+                    <h2>Profile Details</h2>
+                </div>
+
+                <div style="display:flex; gap:20px; align-items:center; margin-bottom:30px; background:#fafafa; padding:20px; border-radius:15px;">
+                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=150&auto=format&fit=crop" alt="Profile" class="profile-img" style="width:80px; height:80px;" id="profileEditAvatar">
+                    <div>
+                        <h3 id="profileNameHeading">Akhil</h3>
+                        <p style="color:var(--text-light); font-size:0.85rem;">University Identity Matrix Verified</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" class="form-control" id="inputProfileName" value="Akhil">
+                </div>
+                <div class="form-group">
+                    <label>Roll Number Identity String</label>
+                    <input type="text" class="form-control" id="inputRollNum" value="24K91A05AL">
+                </div>
+                <div class="form-group">
+                    <label>Institutional Email</label>
+                    <input type="email" class="form-control" id="inputEmail" value="akhil@university.edu" readonly style="background:#f5f5f5; cursor:not-allowed;">
+                </div>
+                
+                <button class="btn-primary" style="margin-top:10px;" onclick="saveProfileChanges()">Update Profile Parameters</button>
+            </div>
+
+            <div id="screen-auth" class="screen">
+                <div class="screen-header">
+                    <h2>User Access Authentication</h2>
+                </div>
+                <div style="background:#f9f9f9; padding:25px; border-radius:15px; border:1px dashed #ddd;">
+                    <div class="form-group">
+                        <label>Select Profile Context Role</label>
+                        <select class="form-control">
+                            <option>Student Domain Space</option>
+                            <option>Instructor/Faculty Member</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Login Identifier String</label>
+                        <input type="text" class="form-control" placeholder="Enter alphanumeric code">
+                    </div>
+                    <div class="form-group">
+                        <label>Secure Credential Phrase</label>
+                        <input type="password" class="form-control" placeholder="••••••••">
+                    </div>
+                    <button class="btn-primary" onclick="showToast('Authentication check executed safely.')">Verify Account Identity</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Track core attendance state arrays natively
+        let presentDays = [1, 2, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15];
+        let absentDays = [3, 9];
+        const maxWorkingDays = 24;
+
+        // SPA Screen Route Engine
+        function switchScreen(screenId, element = null) {
+            // Deactivate all layouts
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+            // Activate target element view structures
+            document.getElementById(`screen-${screenId}`).classList.add('active');
+            
+            if(element) {
+                element.classList.add('active');
+            }
+        }
+
+        // Handle dynamic live day manipulation toggles
+        function toggleDayAttendance(dayNumber, dayElement) {
+            if (dayElement.classList.contains('present')) {
+                // Change Present -> Absent
+                dayElement.classList.remove('present');
+                dayElement.classList.add('absent');
+                
+                presentDays = presentDays.filter(d => d !== dayNumber);
+                if(!absentDays.includes(dayNumber)) absentDays.push(dayNumber);
+            } 
+            else if (dayElement.classList.contains('absent')) {
+                // Change Absent -> Unmarked
+                dayElement.classList.remove('absent');
+                absentDays = absentDays.filter(d => d !== dayNumber);
+            } 
+            else {
+                // Change Unmarked -> Present
+                dayElement.classList.add('present');
+                if(!presentDays.includes(dayNumber)) presentDays.push(dayNumber);
+            }
+
+            calculateAttendanceMetrics();
+        }
+
+        // Live calculation and percentage formula updates 
+        function calculateAttendanceMetrics() {
+            const totalTracked = presentDays.length + absentDays.length;
+            
+            // Recompute values safely
+            let presentCount = presentDays.length;
+            let absentCount = absentDays.length;
+            
+            let percentage = totalTracked > 0 ? ((presentCount / totalTracked) * 100).toFixed(1) : "0.0";
+
+            // Map variables dynamically to presentation layout counters
+            document.getElementById('lblWorking').innerText = totalTracked.toString().padStart(2, '0');
+            document.getElementById('lblPresent').innerText = presentCount.toString().padStart(2, '0');
+            document.getElementById('lblAbsent').innerText = absentCount.toString().padStart(2, '0');
+
+            // Set dashboard parameters layout context
+            document.getElementById('dashTotal').innerText = `${totalTracked} Days`;
+            document.getElementById('dashPresent').innerText = `${presentCount} Days`;
+            document.getElementById('dashAbsent').innerText = `${absentCount} Days`;
+            
+            // Format percentages dynamically
+            document.getElementById('metricPercentage').innerText = `${percentage}%`;
+            document.getElementById('rosterPerc').innerText = `${percentage}%`;
+        }
+
+        // Edit Profile Updates
+        function saveProfileChanges() {
+            const newName = document.getElementById('inputProfileName').value.trim();
+            const newRoll = document.getElementById('inputRollNum').value.trim();
+
+            if(newName !== "" && newRoll !== "") {
+                // Update elements across screens dynamically
+                document.getElementById('displayProfileName').innerText = newName;
+                document.getElementById('profileNameHeading').innerText = newName;
+                document.getElementById('rosterStudentName').innerHTML = `<strong>${newName}</strong> (You)`;
+                document.getElementById('rosterRollNum').innerText = newRoll;
+                
+                showToast("Profile details modified successfully!");
+            } else {
+                showToast("Error: Fields cannot be blank.");
+            }
+        }
+
+        // Toast messaging interface helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initialize setup counters on deployment baseline run
+        window.onload = function() {
+            calculateAttendanceMetrics();
+        };
+    </script>
+</body>
+</html>
